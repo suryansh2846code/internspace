@@ -49,7 +49,7 @@ xcrun stapler staple "dist/InternHelper Agent.app"
 1. Zip the signed app and upload it as a **GitHub Release** asset.
 2. Set the server env var so the web app shows a **Download for macOS** button:
    ```
-   AGENT_DOWNLOAD_MAC = https://github.com/<you>/internhelper/releases/download/vX/InternHelperAgent.zip
+   AGENT_DOWNLOAD_MAC = https://github.com/<you>/internspace/releases/download/vX/InternHelperAgent.zip
    ```
    (Railway → service → Variables.) When set, the Connect modal shows the download
    button; the terminal command stays as an "advanced / has the repo" fallback.
@@ -83,7 +83,7 @@ tag to also attach the zip to the GitHub Release. Download the
 Upload `InternHelperAgent-windows.zip` as a GitHub Release asset, then set:
 
 ```
-AGENT_DOWNLOAD_WINDOWS = https://github.com/<you>/internhelper/releases/download/vX/InternHelperAgent-windows.zip
+AGENT_DOWNLOAD_WINDOWS = https://github.com/<you>/internspace/releases/download/vX/InternHelperAgent-windows.zip
 ```
 
 (Railway → service → Variables.) The Connect modal's **Windows** tab then shows a
