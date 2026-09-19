@@ -742,8 +742,8 @@ function renderConnect() {
     steps = `<p class="wiz-note">⚙️ The one-click app for ${osName} isn't published yet, so this uses the terminal. You'll need <b>Python 3.12+</b> and <b>Git</b> installed.</p>
       <div class="wiz-list">
         ${_wizItem(1, `<b>Install it once</b> — paste these in a terminal (one after another):${_cmdBox('cmd-setup', [
-          'git clone https://github.com/suryansh2846code/internhelper.git',
-          'cd internhelper',
+          'git clone https://github.com/suryansh2846code/internspace.git',
+          'cd internspace',
           `${py} -m pip install -r requirements-agent.txt`,
           `${py} -m playwright install chromium`,
         ].join('\n'))}`)}

@@ -33,9 +33,13 @@ def pair_token(request: Request, user: User = Depends(current_user)):
     """Web app: create a token to connect a new computer."""
     token = create_pairing_token(user.id)
     base = str(request.base_url).rstrip("/")
-    # Behind Railway's TLS proxy base_url can be http://; the public site is https.
-    if base.startswith("http://"):
-        base = "https://" + base[len("http://"):]
+    # Behind Azure Container Apps / Railway TLS proxy, base_url reports http://
+    # but the public site is https. Check X-Forwarded-Proto first, then fall back
+    # to the old heuristic. Don't rewrite localhost (local dev).
+    forwarded_proto = request.headers.get("x-forwarded-proto", "")
+    is_localhost = "localhost" in base or "127.0.0.1" in base
+    if not is_localhost and (forwarded_proto == "https" or base.startswith("http://")):
+        base = "https://" + base[len("http://"):] if base.startswith("http://") else base
     # Terminal fallback (works with the cloned repo today). The packaged desktop
     # app will consume the same token via a deep link instead. python3 on macOS.
     command = f"SERVER_URL={base} AGENT_PAIR_TOKEN={token} python3 -m agent.agent"

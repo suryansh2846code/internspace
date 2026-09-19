@@ -1,11 +1,20 @@
-"""Server settings (env-driven). Railway injects DATABASE_URL + secrets."""
+"""Server settings (env-driven). Azure / Railway inject DATABASE_URL + secrets."""
+import logging
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+log = logging.getLogger("internspace")
+
+_WEAK_SECRETS = frozenset({
+    "dev-secret-change-me", "secret", "development", "test",
+    "123456", "changeme", "password",
+})
 
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    # SQLite locally, Postgres (from Railway) in production.
+    # SQLite locally, Postgres in production (Azure / Railway).
     database_url: str = "sqlite:///./data/app.db"
     jwt_secret: str = "dev-secret-change-me"
     jwt_algorithm: str = "HS256"
@@ -21,6 +30,33 @@ class Settings(BaseSettings):
     # terminal fallback only). Set to GitHub Release assets once built.
     agent_download_mac: str = ""
     agent_download_windows: str = ""
+
+    # CORS: comma-separated origins, e.g. "https://my-app.azurecontainerapps.io"
+    # Empty → no CORS middleware (frontend is same-origin).
+    allowed_origins: str = ""
+
+    # Database connection-pool tuning (ignored for SQLite).
+    db_pool_size: int = 5
+    db_max_overflow: int = 10
+    db_pool_recycle: int = 1800  # seconds — recycle before Azure drops idle conns
+
+    @property
+    def is_production_db(self) -> bool:
+        """True when using a real PostgreSQL database (not SQLite)."""
+        return not self.database_url.startswith("sqlite")
+
+    def validate_for_production(self) -> None:
+        """Fail loudly if a weak JWT secret is used against a production DB."""
+        if self.is_production_db and self.jwt_secret in _WEAK_SECRETS:
+            raise RuntimeError(
+                "FATAL: JWT_SECRET is set to a weak default. "
+                "Set a strong, random JWT_SECRET environment variable before "
+                "deploying with PostgreSQL."
+            )
+        if self.is_production_db:
+            log.info("Production mode: PostgreSQL database detected")
+        else:
+            log.info("Development mode: SQLite database")
 
 
 settings = Settings()
